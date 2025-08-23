@@ -1,109 +1,42 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Login from './components/auth/Login';
-import Signup from './components/auth/Signup';
-import Homepage from './components/dashboard/Homepage';
-import Sheds from './components/sheds/Sheds';
-import Layout from './components/layout/Layout';
 import './App.css';
-
-// Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="loading" style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px',
-        color: '#333'
-      }}>
-        Loading... Please wait
-      </div>
-    );
-  }
-  
-  return isAuthenticated ? children : <Navigate to="/login" />;
-};
-
-// Public Route Component (redirects to home if already authenticated)
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      <div className="loading" style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px',
-        color: '#333'
-      }}>
-        Loading... Please wait
-      </div>
-    );
-  }
-  
-  return isAuthenticated ? <Navigate to="/" /> : children;
-};
 
 function App() {
   console.log('App component rendering...'); // Debug log
   
   return (
-    <AuthProvider>
-      <div className="App">
-        <Routes>
-          {/* Public Routes */}
-          <Route 
-            path="/login" 
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            } 
-          />
-          <Route 
-            path="/signup" 
-            element={
-              <PublicRoute>
-                <Signup />
-              </PublicRoute>
-            } 
-          />
-          
-          {/* Protected Routes */}
-          <Route 
-            path="/" 
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Homepage />
-                </Layout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/sheds" 
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <Sheds />
-                </Layout>
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Default redirect */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+    <div className="App" style={{ 
+      padding: '20px', 
+      textAlign: 'center',
+      minHeight: '100vh',
+      backgroundColor: '#f0f0f0',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      <h1 style={{ color: '#333', marginBottom: '20px' }}>
+        🐔 Hen's Farm Management System
+      </h1>
+      <p style={{ color: '#666', fontSize: '18px' }}>
+        Welcome to the farm management system!
+      </p>
+      <div style={{ 
+        marginTop: '20px', 
+        padding: '15px', 
+        backgroundColor: '#fff', 
+        borderRadius: '8px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+      }}>
+        <p>✅ React is working!</p>
+        <p>✅ App is rendering!</p>
+        <p>✅ CSS is loading!</p>
       </div>
-    </AuthProvider>
+      <div style={{ marginTop: '20px', fontSize: '14px', color: '#888' }}>
+        <p>Check the browser console for debug logs</p>
+        <p>Current time: {new Date().toLocaleString()}</p>
+      </div>
+    </div>
   );
 }
 
