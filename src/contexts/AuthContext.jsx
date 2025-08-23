@@ -3,8 +3,9 @@ import axios from 'axios';
 
 const AuthContext = createContext();
 
-// Configure axios defaults
-axios.defaults.baseURL = 'http://localhost:3001/api';
+// Configure axios defaults - use environment variable or fallback to localhost for development
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.withCredentials = true;
 
 export const useAuth = () => {
@@ -26,12 +27,23 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
+      // For production deployment without backend, skip auth check
+      if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+        console.log('Production mode: Skipping auth check');
+        setLoading(false);
+        return;
+      }
+      
       const response = await axios.get('/auth/status');
       if (response.data.authenticated) {
         setUser(response.data.user);
       }
     } catch (error) {
       console.error('Auth status check failed:', error);
+      // For production, create a demo user if no backend
+      if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+        setUser({ username: 'demo', email: 'demo@example.com' });
+      }
     } finally {
       setLoading(false);
     }
@@ -39,6 +51,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
+      // For production deployment without backend, create demo user
+      if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+        setUser({ username, email: `${username}@example.com` });
+        return { success: true, message: 'Demo login successful' };
+      }
+      
       const response = await axios.post('/auth/login', { username, password });
       setUser(response.data.user);
       return { success: true, message: response.data.message };
@@ -50,6 +68,12 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (username, email, password) => {
     try {
+      // For production deployment without backend, create demo user
+      if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+        setUser({ username, email });
+        return { success: true, message: 'Demo signup successful' };
+      }
+      
       const response = await axios.post('/auth/signup', { username, email, password });
       setUser(response.data.user);
       return { success: true, message: response.data.message };
@@ -61,6 +85,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      if (import.meta.env.PROD && !import.meta.env.VITE_API_URL) {
+        setUser(null);
+        return { success: true, message: 'Logged out successfully' };
+      }
+      
       await axios.post('/auth/logout');
       setUser(null);
       return { success: true, message: 'Logged out successfully' };

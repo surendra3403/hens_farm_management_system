@@ -221,6 +221,39 @@ hensform_management_system/
 
 ## 🚀 Deployment
 
+### GitHub Actions (Recommended)
+
+This project includes automated deployment using GitHub Actions. The workflow automatically builds and deploys your application to GitHub Pages whenever you push to the main branch.
+
+#### Setup Instructions:
+
+1. **Enable GitHub Pages**:
+   - Go to your repository settings
+   - Navigate to "Pages" section
+   - Set source to "Deploy from a branch"
+   - Select `gh-pages` branch
+   - Save the settings
+
+2. **Verify Workflow Files**:
+   - Ensure `.github/workflows/deploy.yml` exists
+   - Ensure `.github/workflows/test.yml` exists
+
+3. **Automatic Deployment**:
+   - Push to `main` or `master` branch
+   - GitHub Actions will automatically:
+     - Install dependencies
+     - Build the project
+     - Deploy to GitHub Pages
+
+#### Manual Deployment Commands:
+```bash
+# Build the project
+npm run build
+
+# Deploy to GitHub Pages
+npm run deploy
+```
+
 ### Production Build
 ```bash
 npm run build

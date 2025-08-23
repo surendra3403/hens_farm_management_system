@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
@@ -13,7 +13,18 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="loading" style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px',
+        color: '#333'
+      }}>
+        Loading... Please wait
+      </div>
+    );
   }
   
   return isAuthenticated ? children : <Navigate to="/login" />;
@@ -24,63 +35,74 @@ const PublicRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <div className="loading" style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px',
+        color: '#333'
+      }}>
+        Loading... Please wait
+      </div>
+    );
   }
   
   return isAuthenticated ? <Navigate to="/" /> : children;
 };
 
 function App() {
+  console.log('App component rendering...'); // Debug log
+  
   return (
     <AuthProvider>
-      <Router>
-        <div className="App">
-          <Routes>
-            {/* Public Routes */}
-            <Route 
-              path="/login" 
-              element={
-                <PublicRoute>
-                  <Login />
-                </PublicRoute>
-              } 
-            />
-            <Route 
-              path="/signup" 
-              element={
-                <PublicRoute>
-                  <Signup />
-                </PublicRoute>
-              } 
-            />
-            
-            {/* Protected Routes */}
-            <Route 
-              path="/" 
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Homepage />
-                  </Layout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/sheds" 
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Sheds />
-                  </Layout>
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Default redirect */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </div>
-      </Router>
+      <div className="App">
+        <Routes>
+          {/* Public Routes */}
+          <Route 
+            path="/login" 
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } 
+          />
+          <Route 
+            path="/signup" 
+            element={
+              <PublicRoute>
+                <Signup />
+              </PublicRoute>
+            } 
+          />
+          
+          {/* Protected Routes */}
+          <Route 
+            path="/" 
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Homepage />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/sheds" 
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Sheds />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Default redirect */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </div>
     </AuthProvider>
   );
 }
