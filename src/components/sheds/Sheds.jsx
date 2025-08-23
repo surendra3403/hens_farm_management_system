@@ -35,6 +35,9 @@ const Sheds = () => {
     present_hens: ''
   });
 
+  // Check if we're in production mode without backend
+  const isProductionMode = import.meta.env.PROD && !import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     fetchSheds();
   }, [selectedDate]);
@@ -42,10 +45,38 @@ const Sheds = () => {
   const fetchSheds = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/sheds?date=${selectedDate}`);
-      setSheds(response.data);
+      
+      if (isProductionMode) {
+        // Use demo data for production
+        const demoSheds = [
+          {
+            id: 1,
+            shed_number: '1',
+            capacity: 25000,
+            present_hens: 21000,
+            created_at: new Date().toISOString()
+          }
+        ];
+        setSheds(demoSheds);
+      } else {
+        // Use real API for development
+        const response = await axios.get(`/sheds?date=${selectedDate}`);
+        setSheds(response.data);
+      }
     } catch (error) {
       console.error('Error fetching sheds:', error);
+      if (isProductionMode) {
+        // Fallback to demo data
+        setSheds([
+          {
+            id: 1,
+            shed_number: '1',
+            capacity: 25000,
+            present_hens: 21000,
+            created_at: new Date().toISOString()
+          }
+        ]);
+      }
     } finally {
       setLoading(false);
     }
@@ -54,10 +85,29 @@ const Sheds = () => {
   const handleAddShed = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/sheds', formData);
-      setShowAddModal(false);
-      setFormData({ shed_number: '', capacity: '', present_hens: '' });
-      fetchSheds();
+      if (isProductionMode) {
+        // Create demo shed
+        const newShed = {
+          id: Date.now(),
+          shed_number: formData.shed_number,
+          capacity: parseInt(formData.capacity),
+          present_hens: parseInt(formData.present_hens),
+          created_at: new Date().toISOString()
+        };
+        
+        setSheds(prev => [...prev, newShed]);
+        setShowAddModal(false);
+        setFormData({ shed_number: '', capacity: '', present_hens: '' });
+        
+        // Show success message
+        alert('Shed added successfully! (Demo mode)');
+      } else {
+        // Use real API for development
+        await axios.post('/sheds', formData);
+        setShowAddModal(false);
+        setFormData({ shed_number: '', capacity: '', present_hens: '' });
+        fetchSheds();
+      }
     } catch (error) {
       console.error('Error adding shed:', error);
       alert(error.response?.data?.error || 'Error adding shed');
@@ -67,14 +117,28 @@ const Sheds = () => {
   const handleEditShed = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`/sheds/${selectedShed.id}`, {
-        shed_number: formData.shed_number,
-        capacity: formData.capacity
-      });
-      setShowEditModal(false);
-      setSelectedShed(null);
-      setFormData({ shed_number: '', capacity: '', present_hens: '' });
-      fetchSheds();
+      if (isProductionMode) {
+        // Update demo shed
+        setSheds(prev => prev.map(shed => 
+          shed.id === selectedShed.id 
+            ? { ...shed, shed_number: formData.shed_number, capacity: parseInt(formData.capacity) }
+            : shed
+        ));
+        setShowEditModal(false);
+        setSelectedShed(null);
+        setFormData({ shed_number: '', capacity: '', present_hens: '' });
+        alert('Shed updated successfully! (Demo mode)');
+      } else {
+        // Use real API for development
+        await axios.put(`/sheds/${selectedShed.id}`, {
+          shed_number: formData.shed_number,
+          capacity: formData.capacity
+        });
+        setShowEditModal(false);
+        setSelectedShed(null);
+        setFormData({ shed_number: '', capacity: '', present_hens: '' });
+        fetchSheds();
+      }
     } catch (error) {
       console.error('Error updating shed:', error);
       alert(error.response?.data?.error || 'Error updating shed');
@@ -86,10 +150,19 @@ const Sheds = () => {
     
     if (window.confirm(`Are you sure you want to delete Shed ${selectedShed.shed_number}?`)) {
       try {
-        await axios.delete(`/sheds/${selectedShed.id}`);
-        setShowInfoModal(false);
-        setSelectedShed(null);
-        fetchSheds();
+        if (isProductionMode) {
+          // Delete demo shed
+          setSheds(prev => prev.filter(shed => shed.id !== selectedShed.id));
+          setShowInfoModal(false);
+          setSelectedShed(null);
+          alert('Shed deleted successfully! (Demo mode)');
+        } else {
+          // Use real API for development
+          await axios.delete(`/sheds/${selectedShed.id}`);
+          setShowInfoModal(false);
+          setSelectedShed(null);
+          fetchSheds();
+        }
       } catch (error) {
         console.error('Error deleting shed:', error);
         alert('Error deleting shed');
@@ -99,22 +172,40 @@ const Sheds = () => {
 
   const handleSaveDailyData = async (shedId) => {
     try {
-      await axios.post(`/sheds/${shedId}/daily-data`, {
-        date: selectedDate,
-        ...dailyData
-      });
-      
-      // Reset form data for this shed
-      setDailyData({
-        mortality: '',
-        production: '',
-        sales: '',
-        feed: '',
-        notes: '',
-        present_hens: ''
-      });
-      
-      fetchSheds();
+      if (isProductionMode) {
+        // Save daily data for demo shed
+        setSheds(prev => prev.map(shed => 
+          shed.id === shedId 
+            ? { ...shed, 
+                mortality: dailyData.mortality,
+                production: dailyData.production,
+                sales: dailyData.sales,
+                feed: dailyData.feed,
+                notes: dailyData.notes,
+                present_hens: dailyData.present_hens
+              }
+            : shed
+        ));
+        alert('Daily data saved successfully! (Demo mode)');
+      } else {
+        // Use real API for development
+        await axios.post(`/sheds/${shedId}/daily-data`, {
+          date: selectedDate,
+          ...dailyData
+        });
+        
+        // Reset form data for this shed
+        setDailyData({
+          mortality: '',
+          production: '',
+          sales: '',
+          feed: '',
+          notes: '',
+          present_hens: ''
+        });
+        
+        fetchSheds();
+      }
     } catch (error) {
       console.error('Error saving daily data:', error);
       alert('Error saving daily data');

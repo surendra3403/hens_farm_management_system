@@ -19,6 +19,9 @@ const Homepage = () => {
   const [loading, setLoading] = useState(true);
   const [expandedCards, setExpandedCards] = useState({});
 
+  // Check if we're in production mode without backend
+  const isProductionMode = import.meta.env.PROD && !import.meta.env.VITE_API_URL;
+
   useEffect(() => {
     fetchDashboardData();
   }, [selectedDate]);
@@ -26,10 +29,48 @@ const Homepage = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/dashboard/summary?date=${selectedDate}`);
-      setDashboardData(response.data);
+      
+      if (isProductionMode) {
+        // Use demo data for production
+        const demoData = {
+          totalHens: 21000,
+          totalMortality: 150,
+          totalStock: 1250,
+          totalSales: 800,
+          totalFeed: 5000,
+          sheds: [
+            { shed_number: '1', hens_count: 21000, mortality: 150, stock: 1250, sales: 800 }
+          ],
+          feedTypes: [
+            { type: 'Layer Feed', quantity: 3000 },
+            { type: 'Grain Mix', quantity: 2000 }
+          ]
+        };
+        setDashboardData(demoData);
+      } else {
+        // Use real API for development
+        const response = await axios.get(`/dashboard/summary?date=${selectedDate}`);
+        setDashboardData(response.data);
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      if (isProductionMode) {
+        // Fallback to demo data
+        setDashboardData({
+          totalHens: 21000,
+          totalMortality: 150,
+          totalStock: 1250,
+          totalSales: 800,
+          totalFeed: 5000,
+          sheds: [
+            { shed_number: '1', hens_count: 21000, mortality: 150, stock: 1250, sales: 800 }
+          ],
+          feedTypes: [
+            { type: 'Layer Feed', quantity: 3000 },
+            { type: 'Grain Mix', quantity: 2000 }
+          ]
+        });
+      }
     } finally {
       setLoading(false);
     }
